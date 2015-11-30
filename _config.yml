@@ -1,8 +1,8 @@
 # Site wide configuration
 
-title:            Site Title
+title:            Some dude's blog
 locale:           en_US
-url:
+url:              http://michielkarnebeek.nl
 
 
 # Jekyll configuration
@@ -31,7 +31,7 @@ owner:
   bio: "Describe your self."
   email:
   disqus-shortname:
-  twitter: #username
+  twitter: mkarnebeek
   facebook: #username
   google:
     plus: #username
@@ -40,9 +40,9 @@ owner:
     ad-client:
     ad-slot:
   bing-verify:
-  github: #username
+  github: mkarnebeek
   stackoverflow: #123456/username   from a "http://stackoverflow.com/users/123456/username" link
-  linkedin: #username
+  linkedin: mkarnebeek
   xing: #username
   instagram: #username
   lastfm: #username

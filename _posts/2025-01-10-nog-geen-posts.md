@@ -2,4 +2,4 @@
 title: "Nog geen posts"
 ---
 
-Nog geen posts.
+Kom over een tijdje nog eens terug.

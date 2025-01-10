@@ -19,6 +19,7 @@ description: >-
   Ik schrijf hier voornamelijk over domotica, maar ook over andere tech onderwerpen die mij interesseren.
 github_username: mkarnebeek
 minimal_mistakes_skin: default
+locale: "nl-NL"
 search: true
 
 # Build settings

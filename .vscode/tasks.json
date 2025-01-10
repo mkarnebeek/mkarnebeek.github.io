@@ -4,9 +4,9 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "jekyll serve",
+            "label": "jekyll serve --drafts",
             "type": "shell",
-            "command": "bundle exec jekyll serve",
+            "command": "bundle exec jekyll serve --drafts",
             "problemMatcher": []
         }
     ]

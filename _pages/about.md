@@ -1,6 +1,6 @@
 ---
-permalink: /over-dit-blog/
-title: "Over dit blog"
+permalink: /over-deze-site/
+title: "Over deze site"
 ---
 
-Ik ben Michiel Karnebeek. Ik ben een software ontwikkelaar met een hobby voor domotica. Ik blog hier voornamelijk over domotica en andere tech onderwerpen.
+Ik ben Michiel Karnebeek. Ik ben een software ontwikkelaar met een hobby voor domotica. Ik schrijf hier voornamelijk over domotica en andere tech onderwerpen.

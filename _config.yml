@@ -16,7 +16,7 @@
 title: Michiel's blog
 email:
 description: >-
-  Ik schrijf hier voornamelijk over domotica, maar ook over andere tech onderwerpen die mij interesseren.
+  Ik schrijf hier voornamelijk over domotica, maar ook over andere tech onderwerpen.
 github_username: mkarnebeek
 minimal_mistakes_skin: default
 locale: "nl-NL"
@@ -58,7 +58,7 @@ plugins:
 author:
   name   : "Michiel Karnebeek"
   avatar : "/assets/images/bio-photo.jpg"
-  bio    : "Ik schrijf hier voornamelijk over domotica, maar ook over andere onderwerpen die mij interesseren."
+  bio    : "Ik schrijf hier voornamelijk over domotica, maar ook over andere tech onderwerpen."
   links:
     - label: "GitHub"
       icon: "fab fa-fw fa-github"

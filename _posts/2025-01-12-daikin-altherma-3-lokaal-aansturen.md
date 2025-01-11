@@ -1,0 +1,92 @@
+---
+title: "Daikin Altherma 3 lokaal aansturen"
+tags: Daikin Warmtepomp Modbus
+---
+
+Dit artikel beschrijft mijn zoektocht om de Daikin Altherma 3 lokaal aan te sturen.
+
+## Inleiding
+
+Ons huis wordt sinds februari 2023 verwarmd door een Daikin Altherma 3 warmtepomp en zijn we van het gas af. Dit is een split-unit dat zowel de verwarming van het huis op zich neemt, als het warm tapwater. Het bestaat uit een buitendeel, wat een normale airco installatie ook heeft, en een binnendeel waarin o.a. leidingwerk, een warmtewisselaar en de warm tapwater tank zit. 
+
+![](/assets/images/daikin_altherma_3/units.png)
+
+Nadat deze geinstalleerd was, heb ik hem eerst maar eens uitgelezen met ESPAltherma. Hiermee kon ik 'm optimaliseren. Ook gebruikte ik een Home Assistant integratie om 'm te kunnen bedienen, maar dit werkte in eerste instantie alleen via de cloud. Ook ondekte ik gedrag aan de unit en thermostaat welke ik graag wilde verbeteren. Ook was er volgends de documentatie een mogelijkheid om energie te bufferen in de tapwater tank of de vloerverwarming, welke ik interessant vond.
+
+## Doelen en eisen
+
+Ik ging dus op zoek naar mogelijkheden, met de volgende doelen:
+- De unit volledig lokaal aansturen en integreren in mijn domotica. Denk aan aumatisch temperaturen aanpassen op vakantie, en alleen in één interface te hebben in plaats van voor elk "smart" apparaat een aparte app.
+- Het mogelijk te maken om zelf thermostaat-logica te implementeren, om zo een aantal tekortkomingen van de unit op te lossen. Meer hierover in een ander artikel.
+- Het mogelijk te maken om energie te bufferen in de tapwater tank of de vloerverwarming, om zo mijn eigen verbruik van de zonnepanelen beter te benutten en het net te ontlasten.
+
+# Eisen
+
+Het moet een door Daikin officieel ondersteunde oplossing zijn. Geen reverse-engineering, en het liefst geen 3rd party producten.
+Open protocollen waar mogelijk. Geen niet-ondersteunde aanpassingen aan de warmtepomp.
+
+## Interfaces
+
+Laten we beginnen met een overzicht van de interfaces die Daikin ons aanbiedt.
+
+### De Cloud van Daikin: De Draadloze Gateway
+
+Dit is sd-kaart achtige module die in de binnenunit geplaatst wordt. Deze verbind via wifi met de cloud van Daikin. Dit is de moderne variant van 2 andere oplossingen welke allen uiteindelijk verbinding maken met de cloud van Daikin.
+
+![](/assets/images/daikin_altherma_3/wifi-sd-card.png){: width="250" }
+
+Naast dat ik communicatie via de cloud voor mijn domotica gewoon niet wil, is ook de ondersteuning van Daikin hiervoor erg beperkt. De app kan paar per halve graad de temperatuur instellen. Het schema is nog minder accuraat, waar je maar per 1 graad kan instellen.
+
+Ook merk je dat ze niet dol zijn om externe systemen via deze route te ondersteunen. In het begin was er een Home Assistant integratie die met dezelfde API verbinding maakte, maar dit werd al snel door Daikin vervangen door de ONECTA Cloud API welke bedoeld was voor externe integraties zoals Home Assistant. Echter deze mocht je maar een beperkt aantal keren per dag aanroepen, en stelde deze mij niet in staat om de unit naar wens te besturen.
+
+Zolang ik dus geen alternatief had, was dit de manier om te integreren met mijn domotica. Meh.
+
+### Lokaal uitlezen: X10A serial poort
+
+Dit is een intern poort op de binnenunit, welke ook gebruikt wordt door hun engineers om bijvoorbeeld de firmware van de binnenunit te updaten (niet te verwarren met de user interface software op de binnenunit). Dit betreft een actief protocol waarbij je dus een query voor informatie stuurt en een antwoord krijgt van de binnenunit. 
+
+Praktisch het enige open source project dat hiervan gebruik maakt is [ESPAltherma](https://github.com/raomin/ESPAltherma). Dit is een erg gaaf project om erg veel inzicht te krijgen in het gedrag van de warmtepomp. 
+
+![](/assets/images/daikin_altherma_3/espaltherma.png)
+
+Met die informatie kun je perfect je warmtepomp optimaliseren. Onderstaand een voorbeeld van de informatie die er uit te halen is:
+
+![](/assets/images/daikin_altherma_3/grafana.png)
+
+Het wijzigen van instellingen gebreurt echter altijd handmatig op de unit zelf, omdat het besturen van de warmtepomp is beperkt tot het met een relais aansturen van de smart-grid contacten van de binnenunit. Wijzigen van woonkamer thermostaat setpoint is er bijvoorbeeld niet bij.
+
+### Lokale aansturing: Smart-grid contacten
+
+![](/assets/images/daikin_altherma_3/smart-grid.png){: width="400" }
+
+O.a. ESPAltherma maakt hier dus gebruik van, of je kunt zelf wat klussen met ESPHome bijvoorbeeld. De documentatie hiervan is goed, echter de mogelijkheden zijn erg beperkt. Deze Smart-grid interface is uit te breiden met 2 IO-boards van Daikin, welke je in staat stelt om uitgebreider bijvoorbeeld vermogenslimiten in te stellen, echter zijn deze erg prijzig voor de geleverde mogelijkheden, en kunnen deze nog steeds niet wat ik nodig heb, zoals bijvoorbeeld bepalen van de tank temperatuur.
+
+### Lokale aansturing: De P1P2 bus via Open Source
+
+De P1P2 bus is een eigen bus van Daikin die zij al een aantal generaties van hun apparaten gebruiken om te communiceren tussen verschillende apparaten. Bij de warmtepompten wordt dit gebruikt tussen de thermostaat en de binnenunit (nope, geen OpenTherm dus). Dit is een 2-draads bus, welke je vrij kunt doorlussen tussen de verschillende apparaten. In mijn geval was er een Madoka-thermostaat als enige apparaat hierop aangesloten, deze trouwens ookwel de "Interface voor menselijk comfort" noemt :P.
+
+![](/assets/images/daikin_altherma_3/thermostat.png){: width="250" }
+
+Er bestaat een open source project dat dit protocol ge-reverse-engineered. Voormalig P1P2Serial en nu [P1P2MQTT](https://github.com/Arnold-n/P1P2MQTT). Gezien echter dat dit protocol in staat is naar interne registers te schrijven op de binnenunit, er geen officiele documentatie van Daikin is, en dit met 2 kleine kinderen een vrij kritisch systeem van ons huis is, wilde ik hier liever niet meer rommelen.
+
+### Lokale aansturing: P1P2 bus en derde partijen
+
+Daikin werkt wel samen met derde partijen om producten te ontwikkelen die gebruik maken van de P1P2 bus. Er is dus wel documentatie van deze bus welke door derde partijen gebruikt wordt om producten te ontwikkelen. Zodoende zijn er bijvoorbeeld best wat producten te vinden voor KNX die via P1P2 Daikin producten kunnen aansturen. Tot dusver heb ik mij daar om 2 redenen niet echt in verdiept: KNX is geen open protocol. Je betaalt licetiekosten voor software om dit the programmeren, en de meeste producten hebben beperkt ondersteuning voor Daikin Altherms 3.
+
+### Lokale aansturing: P1P2 en Modbus producten van Daikin
+
+Daikin heeft een aantal Modbus naar P1P2 producten op de markt. De volgende 3 ondersteunen de Altherma 3: DCOM-LT/MB, DCOM-LT/IO en de Daikin Home Hub (EKRHH). De eerste ondersteund alleen modbus, en de tweede zowel modbus als analoge ingangen.
+
+![](/assets/images/daikin_altherma_3/dcom-lt-mb.png){: width="250" } ![](/assets/images/daikin_altherma_3/dcom-lt-io.png){: width="250" }
+
+De DCOM-LT/IO beschikt over de mogelijkheden die ik zoek. De aansturing zou nog wat onhandig verlopen, omdat sommige features alleen als analoge ingangen beschikbaar zijn. Dit vereiste dus nog steeds best wel wel wat aansluitingen tussen een ESP32 en deze module, maar we komen in de buurt van wat ik zoek.
+
+Totdat Daikin de Daikin Home Hub (EKRHH) introducteerde!
+
+### Lokale aansturing: Modbus via Daikin Home Hub
+
+Dit is een product van Daikin dat gefocussed is op eigen verbruik optimalisatie. Via een USB poort is een P1 kabel naar een slimme meter aan te sluiten, en dat is alles wat je nodig hebt om buffering in je vloerverwarming of tapwater tank te gebruiken. Woaw. Voor wat ik van Daikin gewend ben tot dusver, was dit een futuristisch product!
+
+![](/assets/images/daikin_altherma_3/ekrhh.png){: width="300" } ![](/assets/images/daikin_altherma_3/ekrhh-connect.png){: width="300  " }
+
+Ook ondersteunde het een Modbus modus, waarin alle slimmigheid uitgeschakeld wordt, en er zowel via RTU (serieel) als over TCP een Modbus interface beschikbaar is. Wat ik van de documentatie mag geloven, stelt dit alle mogelijkheden beschikbaar voor de Altherma 3 die ik zoek.

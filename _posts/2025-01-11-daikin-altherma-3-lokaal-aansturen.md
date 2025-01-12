@@ -13,7 +13,7 @@ Ons huis wordt sinds februari 2023 verwarmd door een Daikin Altherma 3 warmtepom
 
 Nadat deze geinstalleerd was, heb ik hem eerst maar eens uitgelezen met ESPAltherma. Hiermee kon ik 'm optimaliseren. Ook gebruikte ik een Home Assistant integratie om 'm te kunnen bedienen, maar dit werkte in eerste instantie alleen via de cloud. Ook ondekte ik gedrag aan de unit en thermostaat welke ik graag wilde verbeteren. Ook was er volgends de documentatie een mogelijkheid om energie te bufferen in de tapwater tank of de vloerverwarming, welke ik interessant vond.
 
-## Doelen en eisen
+## Doelen
 
 Ik ging dus op zoek naar mogelijkheden, met de volgende doelen:
 - De unit volledig lokaal aansturen en integreren in mijn domotica. Denk aan aumatisch temperaturen aanpassen op vakantie, en alleen in één interface te hebben in plaats van voor elk "smart" apparaat een aparte app.

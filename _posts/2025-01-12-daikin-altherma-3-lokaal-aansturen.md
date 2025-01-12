@@ -3,27 +3,28 @@ title: "Daikin Altherma 3 lokaal aansturen"
 tags: Daikin Warmtepomp Modbus
 ---
 
-Dit artikel beschrijft mijn zoektocht om de Daikin Altherma 3 lokaal aan te sturen.
-
 ## Inleiding
 
 Ons huis wordt sinds februari 2023 verwarmd door een Daikin Altherma 3 warmtepomp en zijn we van het gas af. Dit is een split-unit dat zowel de verwarming van het huis op zich neemt, als het warm tapwater. Het bestaat uit een buitendeel, wat een normale airco installatie ook heeft, en een binnendeel waarin o.a. leidingwerk, een warmtewisselaar en de warm tapwater tank zit. 
 
 ![](/assets/images/daikin_altherma_3/units.png)
 
-Nadat deze geinstalleerd was, heb ik hem eerst maar eens uitgelezen met ESPAltherma. Hiermee kon ik 'm optimaliseren. Ook gebruikte ik een Home Assistant integratie om 'm te kunnen bedienen, maar dit werkte in eerste instantie alleen via de cloud. Ook ondekte ik gedrag aan de unit en thermostaat welke ik graag wilde verbeteren. Ook was er volgends de documentatie een mogelijkheid om energie te bufferen in de tapwater tank of de vloerverwarming, welke ik interessant vond.
+Nadat deze geinstalleerd was, heb ik hem eerst maar eens uitgelezen met ESPAltherma. Hiermee kon ik 'm optimaliseren. Om 'm te kunnen bedienen via Home Assistant gebruikte ik de Onecta [integratie van Johnny Willemsen](https://github.com/jwillemsen/daikin_onecta), maar dit werkt alleen via de cloud.
+
+In de loop der tijd ondekte ik gedrag aan de warmtepomp welke ik graag wilde verbeteren. Daarnaast was er volgends de documentatie een mogelijkheid om energie te bufferen in de tapwater tank of de vloerverwarming, welke ik interessant vond.
+
+Zo startte mijn zoektocht naar een lokale aansturing van de warmtepomp.
 
 ## Doelen
 
 Ik ging dus op zoek naar mogelijkheden, met de volgende doelen:
-- De unit volledig lokaal aansturen en integreren in mijn domotica. Denk aan aumatisch temperaturen aanpassen op vakantie, en alleen in één interface te hebben in plaats van voor elk "smart" apparaat een aparte app.
+- De unit volledig lokaal aansturen en integreren in mijn domotica. Denk aan automatisch temperaturen aanpassen op vakantie, of de tank extra verwarmen. Ook heb je dan allees in één interface in plaats van voor elk "smart" apparaat een aparte app.
 - Het mogelijk te maken om zelf thermostaat-logica te implementeren, om zo een aantal tekortkomingen van de unit op te lossen. Meer hierover in een ander artikel.
 - Het mogelijk te maken om energie te bufferen in de tapwater tank of de vloerverwarming, om zo mijn eigen verbruik van de zonnepanelen beter te benutten en het net te ontlasten.
 
 # Eisen
 
-Het moet een door Daikin officieel ondersteunde oplossing zijn. Geen reverse-engineering, en het liefst geen 3rd party producten.
-Open protocollen waar mogelijk. Geen niet-ondersteunde aanpassingen aan de warmtepomp.
+Open protocollen waar mogelijk. Het moet een door Daikin officieel ondersteunde oplossing zijn. Geen reverse-engineering, en het liefst geen 3rd party producten. En geen (niet-ondersteunde) aanpassingen aan de warmtepomp.
 
 ## Interfaces
 

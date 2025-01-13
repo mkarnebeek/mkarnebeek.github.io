@@ -67,7 +67,7 @@ Er bestaat een open source project dat dit protocol ge-reverse-engineered. Voorm
 
 ### Lokale aansturing: P1P2 bus en derde partijen
 
-Daikin werkt wel samen met derde partijen om producten te ontwikkelen die gebruik maken van de P1P2 bus. Er is dus wel documentatie van deze bus welke door derde partijen gebruikt wordt om producten te ontwikkelen. Zodoende zijn er bijvoorbeeld best wat producten te vinden voor KNX die via P1P2 Daikin producten kunnen aansturen. Tot dusver heb ik mij daar om 2 redenen niet echt in verdiept: KNX is geen open protocol. Je betaalt licetiekosten voor software om dit the programmeren, en de meeste producten hebben beperkt ondersteuning voor Daikin Altherms 3.
+Daikin werkt wel samen met derde partijen om producten te ontwikkelen die gebruik maken van de P1P2 bus. Er is dus wel documentatie van deze bus welke door derde partijen gebruikt wordt om producten te ontwikkelen. Zodoende zijn er bijvoorbeeld best wat producten te vinden voor KNX die via P1P2 Daikin producten kunnen aansturen. Tot dusver heb ik mij daar om 2 redenen niet echt in verdiept: KNX is geen open protocol. Je betaalt licentiekosten voor software om dit the programmeren, en de meeste producten hebben beperkt ondersteuning voor Daikin Altherms 3.
 
 ### Lokale aansturing: P1P2 en Modbus producten van Daikin
 
@@ -105,7 +105,7 @@ Na het aanschaffen en installeren van de Daikin Home Hub bleek echter dat de bin
 
 *Uit de uitgebreide installateurs handleiding van Daikin, de vereiste Micon ID versie voor de binnenunit om te kunnen communiceren met de Daikin Home Hub. Ik had versie 0222, wat dus niet voldoet.*
 
-Dit was een lang proces bij Daikin en verliep allerminst vlekkeloos. Na maandend touwtrekken kwam er eindelijk een engineer van Daikin die mij de firmware update kon uitvoeren, waarna de Daikin Home Hub werkte zoals verwacht. Daikin deed dit voor mij uiteindelijk gratis, voornamelijk door de onduidelijkheid aan hun kant. Verwacht hier normaliter ook ruim 300 euro voor verder te zijn. 
+Dit was een lang proces bij Daikin en verliep allerminst vlekkeloos. Na maanden touwtrekken kwam er eindelijk een engineer van Daikin die mij de firmware update kon uitvoeren, waarna de Daikin Home Hub werkte zoals verwacht. Daikin deed dit voor mij uiteindelijk gratis, voornamelijk door de onduidelijkheid aan hun kant. Verwacht hier normaliter ook ruim 300 euro voor te betalen. 
 
 ## Eindelijk! En toen?
 

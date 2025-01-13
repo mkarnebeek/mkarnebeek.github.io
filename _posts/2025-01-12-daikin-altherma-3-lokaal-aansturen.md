@@ -3,8 +3,6 @@ title: "Daikin Altherma 3 lokaal aansturen"
 tags: Daikin Warmtepomp Modbus
 ---
 
-## Inleiding
-
 Ons huis wordt sinds februari 2023 verwarmd door een Daikin Altherma 3 warmtepomp en zijn we van het gas af. Dit is een split-unit dat zowel de verwarming van het huis op zich neemt, als het warm tapwater. Het bestaat uit een buitendeel, wat een normale airco installatie ook heeft, en een binnendeel waarin o.a. leidingwerk, een warmtewisselaar en de warm tapwater tank zit. 
 
 ![](/assets/images/daikin_altherma_3/units.png)
@@ -15,26 +13,22 @@ In de loop der tijd ondekte ik gedrag aan de warmtepomp welke ik graag wilde ver
 
 Zo startte mijn zoektocht naar een lokale aansturing van de warmtepomp.
 
-## Doelen
+**Doelen**
 
-Ik ging dus op zoek naar mogelijkheden, met de volgende doelen:
-- De unit volledig lokaal aansturen en integreren in mijn domotica. Denk aan automatisch temperaturen aanpassen op vakantie, of de tank extra verwarmen. Ook heb je dan allees in één interface in plaats van voor elk "smart" apparaat een aparte app.
-- Het mogelijk te maken om zelf thermostaat-logica te implementeren, om zo een aantal tekortkomingen van de unit op te lossen. Meer hierover in een ander artikel.
+- De unit volledig lokaal aansturen en integreren in mijn domotica. Denk aan automatisch temperaturen aanpassen op vakantie, of de tank extra verwarmen. Ook zit dan alles in één user interface, in plaats van voor elk "smart" apparaat een eigen app te hebben.
+- Het mogelijk te maken om zelf thermostaat-logica te implementeren, om zo een aantal tekortkomingen van de unit op te lossen. Zie [een eigen thermostaat bouwen](/een-eigen-thermostaat-bouwen).
 - Het mogelijk te maken om energie te bufferen in de tapwater tank of de vloerverwarming, om zo mijn eigen verbruik van de zonnepanelen beter te benutten en het net te ontlasten.
 
-# Eisen
+**Eisen**
 
-Open protocollen waar mogelijk. Het moet een door Daikin officieel ondersteunde oplossing zijn. Geen reverse-engineering, en het liefst geen 3rd party producten. En geen (niet-ondersteunde) aanpassingen aan de warmtepomp.
+Lokale communicatie met open protocollen waar mogelijk. Het moet een door Daikin officieel ondersteunde oplossing zijn. Geen reverse-engineering, of (niet-ondersteunde) aanpassingen aan de warmtepomp, aangezien dit met 2 kleine kinderen een vrij kritisch systeem van ons huis is :P.
 
 ## Interfaces
 
-Laten we beginnen met een overzicht van de interfaces die Daikin ons aanbiedt.
-
 ### De Cloud van Daikin: De Draadloze Gateway
 
-Dit is sd-kaart achtige module die in de binnenunit geplaatst wordt. Deze verbind via wifi met de cloud van Daikin. Dit is de moderne variant van 2 andere oplossingen welke allen uiteindelijk verbinding maken met de cloud van Daikin.
-
-![](/assets/images/daikin_altherma_3/wifi-sd-card.png){: width="250" }
+Dit is sd-kaart achtige module die in de binnenunit geplaatst wordt. 
+![](/assets/images/daikin_altherma_3/wifi-sd-card.png){: width="250" .align-right } Deze verbind via wifi met de cloud van Daikin. Dit is de moderne variant van 2 andere oplossingen welke allen uiteindelijk verbinding maken met de cloud van Daikin.
 
 Naast dat ik communicatie via de cloud voor mijn domotica gewoon niet wil, is ook de ondersteuning van Daikin hiervoor erg beperkt. De app kan paar per halve graad de temperatuur instellen. Het schema is nog minder accuraat, waar je maar per 1 graad kan instellen.
 
@@ -64,11 +58,12 @@ O.a. ESPAltherma maakt hier dus gebruik van, of je kunt zelf wat klussen met ESP
 
 ### Lokale aansturing: De P1P2 bus via Open Source
 
-De P1P2 bus is een eigen bus van Daikin die zij al een aantal generaties van hun apparaten gebruiken om te communiceren tussen verschillende apparaten. Bij de warmtepompten wordt dit gebruikt tussen de thermostaat en de binnenunit (nope, geen OpenTherm dus). Dit is een 2-draads bus, welke je vrij kunt doorlussen tussen de verschillende apparaten. In mijn geval was er een Madoka-thermostaat als enige apparaat hierop aangesloten, deze trouwens ookwel de "Interface voor menselijk comfort" noemt :P.
+De P1P2 bus is een eigen bus van Daikin die zij al een aantal generaties van hun apparaten gebruiken om te communiceren tussen verschillende apparaten. Bij de warmtepompten wordt dit gebruikt tussen de thermostaat en de binnenunit (nope, geen OpenTherm dus). Dit is een 2-draads bus, welke je vrij kunt doorlussen tussen de verschillende apparaten. 
 
-![](/assets/images/daikin_altherma_3/thermostat.png){: width="250" }
+![](/assets/images/daikin_altherma_3/thermostat.png){: width="200" .align-right } In mijn geval was er een Madoka-thermostaat als enige apparaat hierop aangesloten, deze trouwens ookwel de "Interface voor menselijk comfort" noemt :P.
 
-Er bestaat een open source project dat dit protocol ge-reverse-engineered. Voormalig P1P2Serial en nu [P1P2MQTT](https://github.com/Arnold-n/P1P2MQTT). Gezien echter dat dit protocol in staat is naar interne registers te schrijven op de binnenunit, er geen officiele documentatie van Daikin is, en dit met 2 kleine kinderen een vrij kritisch systeem van ons huis is, wilde ik hier liever niet meer rommelen.
+
+Er bestaat een open source project dat dit protocol ge-reverse-engineered. Voormalig P1P2Serial en nu [P1P2MQTT](https://github.com/Arnold-n/P1P2MQTT). Gezien echter dat dit protocol in staat is naar interne registers te schrijven op de binnenunit en er geen officiele documentatie van Daikin is, wilde ik hier liever niet mee rommelen.
 
 ### Lokale aansturing: P1P2 bus en derde partijen
 
@@ -91,3 +86,27 @@ Dit is een product van Daikin dat gefocussed is op eigen verbruik optimalisatie.
 ![](/assets/images/daikin_altherma_3/ekrhh.png){: width="300" } ![](/assets/images/daikin_altherma_3/ekrhh-connect.png){: width="300  " }
 
 Ook ondersteunde het een Modbus modus, waarin alle slimmigheid uitgeschakeld wordt, en er zowel via RTU (serieel) als over TCP een Modbus interface beschikbaar is. Wat ik van de documentatie mag geloven, stelt dit alle mogelijkheden beschikbaar voor de Altherma 3 die ik zoek.
+
+## Verder bouwen
+
+Na het bekijken van opties voor lokale aansturing van de Daikin Altherma 3 warmtepomp, lijkt de Daikin Home Hub de beste keuze. Aangevuld met ESPAltherma voor het uitlezen van data dat de Daikin Home Hub niet kan leveren.
+
+Het idee is om een ESP32 met ESPHome te gebruiken om over Modbus RTU met de Daikin Home Hub te communiceren. De Daikin Home Hub zal dan enkel als modbus interface dienen om de Altherma 3 aan te sturen. Zie [Een eigen thermostaat bouwen](/een-eigen-thermostaat-bouwen) hoe dit verder ging.
+
+## Aanschaffen Daikin Home Hub
+
+Het aanschaffen van de Daikin Home Hub was nog wel een dingetje, want dik 600 euro neertellen voor een router-formaat kastje dat niets meer doet dan bridgen tussen de P1P2 bus en Modbus, vond ik nogal prijzig. Na wat prijzen op vooral duitse websites een tijdje in de gaten houden, vond ik er een voor net boven de 300 euro. Toen 'm toch maar aangeschaft.
+
+## Software update?
+
+Na het aanschaffen en installeren van de Daikin Home Hub bleek echter dat de binnenunit nog een software update nodig had om te communiceren met de Daikin Home Hub. Het ging om de firmware op de binnenunit, de zogeheten "Micon ID binnen". Dit ging niet om de MMU, ofwel de user interface die je op de binnenunit ziet, maar om de firmware op het mainboard van de binnenunit. 
+
+![](/assets/images/daikin_altherma_3/required-micon-id.png){: width="400" }
+
+*Uit de uitgebreide installateurs handleiding van Daikin, de vereiste Micon ID versie voor de binnenunit om te kunnen communiceren met de Daikin Home Hub. Ik had versie 0222, wat dus niet voldoet.*
+
+Dit was een lang proces bij Daikin en verliep allerminst vlekkeloos. Na maandend touwtrekken kwam er eindelijk een engineer van Daikin die mij de firmware update kon uitvoeren, waarna de Daikin Home Hub werkte zoals verwacht. Daikin deed dit voor mij uiteindelijk gratis, voornamelijk door de onduidelijkheid aan hun kant. Verwacht hier normaliter ook ruim 300 euro voor verder te zijn. 
+
+## Eindelijk! En toen?
+
+Ik heb nu eindelijk op een officieel ondersteunde manier, volledig lokaal, via een open protocol controle over mijn warmtepomp en kan nu mijn eigen thermostaat bouwen! Zie [Een eigen thermostaat bouwen](/een-eigen-thermostaat-bouwen) waar ik verder in ga op hoe ik met ESPHome een eigen thermostaat bouwde en uiteindelijk die van Daikin verving en veel betere resultaten kreeg.

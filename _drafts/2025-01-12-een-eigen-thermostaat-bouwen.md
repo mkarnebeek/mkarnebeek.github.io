@@ -19,11 +19,11 @@ Ik heb besloten mij eigen thermostaat te bouwen om de volgende problemen op te l
   - Het uitvoeren van een desinfectie run, waarbij de tank op 60 graden wordt verwarmd, zorgt er dan voor dat een groot deel op de backup-heater gedraaid wordt. In de zomer voer je dit dus liever uit in de vroege ochtend, en in de winter op het warmst van de dag / overdag. Het moeten aanpassen van deze instelling elk seizoen is vervelend.
   - De tank ondersteund een stooklijn, waardoor hij bij koudere buitentemperaturen een hogere temperatuur in de tank aanhoudt, wat ik kan gebruiken om dit probleem heen te werken, echter is deze stooklijk aan de max buitentemperatuur kant beperkt tot 10 graden of lager. Dit wil ik graag verder kunnen tweaken.
 
-Ik zou graag de volgende slimme features willen implementeren
+En om de volgende slimme features te implementeren:
 
-- slimme aansturing / buffering tank/woonkamer
-- openhaard modus
-- desinfectie neemt handmatig naar 60-graden verwarmen mee
+- Slimme aansturing / buffering tank/woonkamer
+- Openhaard modus
+- Desinfectie neemt handmatig naar 60-graden verwarmen mee
 
 ## Vereisten
 

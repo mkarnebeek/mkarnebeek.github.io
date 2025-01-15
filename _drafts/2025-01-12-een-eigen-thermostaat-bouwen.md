@@ -3,9 +3,9 @@ title: "ESPHome thermostaat voor Daikin Altherma 3"
 tags: ESPHome Daikin Warmtepomp
 ---
 
-In [een vorig artikel](/daikin-altherma-3-lokaal-aansturen) keken we naar welke manieren mijn warmtepomp lokaal aan te sturen is. Dit bracht ons tot de Daikin Home Hub welke een Modbus interface beschikbaar stelt.
+In [een vorig artikel](/daikin-altherma-3-lokaal-aansturen) keek ik naar welke manieren mijn warmtepomp lokaal aan te sturen is. Dit leverde een Modbus RTU interface op waarmee ik de gewenste functies kan aansturen. In dit artikel doorloop ik hoe ik een eigen thermostaat heb gebouwd voor de Daikin Altherma 3 warmtepomp, om enkele problemen op te lossen en eigen functies te implementeren. En waarom ik bepaalde keuzes heb gemaakt.
 
-In dit artikel beschrijf ik hoe ik een ESPHome-based thermostaat heb gemaakt voor de Daikin Altherma 3 warmtepomp.
+todo: screenshot thermostaat.
 
 ## Waarom een eigen thermostaat?
 
@@ -29,11 +29,34 @@ En om de volgende slimme features te implementeren:
 
 - Volledig op zichzelf staand werkende thermostaat. Zelfs als het netwerk en Home Assistant uit valt, moet dit nog blijven werken.
 - Liever off-the-shelf oplossinngen, eventueel flashed met open source software, maar zo min mogelijk zelfbouw hardware.
+- Mogelijkheden om eigen logica te implementeren of bestaande logica zodanig aan te passen dat het gewenste gedrag ontstaat.
 
 ## Implementatie
 
-Modbus RTU ipv Modbus TCP maakt dit onafhankelijk van netwerk. De verbinding is simpel en betrouwbaar en goed ondersteund door ESPHome.
+### Modbus RTU aansturing
+
+Modbus RTU is een simpele interface en makkelijk aan te sturen met een microcontroller. Het werkt met maar 2 aders tussen 2 apparaten en werkt onafhankelijk van het thuisnetwerk.
+
+todo: afbeeldingen Modbus RTU interface?
+
+Door de thermostaat logica te draaien in een microcontroller in plaats van Home Assistant, kan deze zelfstandig functioneren en verbruikt het weinig stroom. Omdat ik Home Assistant gebruik, en ESPHome ondersteuning heeft voor Modbus RTU en verschillende thermostaat logica's, is het ook een logische keuze om ESPHome te gebruiken als firmware voor de microcontrollers.
+
+### Woonkamer temperatuur meten
+
+todo: afbeeldingen AirGradient
+
+todo: afbeeldingen bluetooth sensor
+
+Vervolgens moeten we een manier vinden om de huidige woonkamer temperatuur te meten. Aangezien ik daar al een AirGradient luchtkwaliteitsmeter heb staan, en die ook al voorzien is van ESPHome en een display met wat nuttige informatie, hergebruik ik graag deze in plaats van weer een extra apparaat in de woonkamer te hebben staan. Deze kan prima aan de muur hangen waar nu de thermostaat zit. Aangezien de AirGradient een standaard ESP32 gebruikt, beschikt hij zowel wifi als bluetooth. Het is dan gemakkelijk om deze als een generieke bluetooth temperatuur sensor te laten gedragen.
+
+### Thermostaat logica
+
+Dan is de vraag, laten we de thermostaat logica draaien in de AirGradient, en is de andere microcontroller een simpele Modbus RTU client? Of is het beter om de thermostaat logica in de andere microcontroller te draaien? Ik ben voor dat tweede gegaan. Om 2 redenen:
+- De thermostaat logics kan dan nog beperkt functioneert mocht de verbinding met de AirGradient even wegvallen. 
+- De AirGradient gedraagt zich als een generieke bluetooth temperatuur sensor, wat het makkelijk maakt om deze te vervangen door een andere sensor.
+
+todo: diagram esphome microcontroller verbonden met de Home Hub. En een thermometer in de woonkamer.
 
 
 
-Modbus is een makkelijk aan te sturen protocol met een microcontroller. Door het in een microcontroller te implementeren, kan deze zelfstandig functioneren en verbruikt het weinig stroom. Door Modbus RTU 
+

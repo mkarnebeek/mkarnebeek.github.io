@@ -75,13 +75,13 @@ Daikin heeft een aantal Modbus naar P1P2 producten op de markt. De volgende 3 on
 
 ![](/assets/images/daikin_altherma_3/dcom-lt-mb.png){: width="250" } ![](/assets/images/daikin_altherma_3/dcom-lt-io.png){: width="250" }
 
-De DCOM-LT/IO beschikt over de mogelijkheden die ik zoek. De aansturing zou nog wat onhandig verlopen, omdat sommige features alleen als analoge ingangen beschikbaar zijn. Dit vereiste dus nog steeds best wel wel wat aansluitingen tussen een ESP32 en deze module, maar we komen in de buurt van wat ik zoek.
+De DCOM-LT/IO beschikt over de mogelijkheden die ik zoek. De aansturing zou nog wat onhandig verlopen, omdat sommige features alleen als analoge ingangen beschikbaar zijn. Dit vereiste dus nog steeds best wel wel wat aansluitingen tussen een ESP32 en deze module, maar ik kom in de buurt van wat ik zoek.
 
 Totdat Daikin de Daikin Home Hub (EKRHH) introducteerde!
 
 ### Lokale aansturing: Modbus via Daikin Home Hub
 
-Dit is een product van Daikin dat gefocussed is op eigen verbruik optimalisatie. Via een USB poort is een P1 kabel naar een slimme meter aan te sluiten, en dat is alles wat je nodig hebt om buffering in je vloerverwarming of tapwater tank te gebruiken. Woaw. Voor wat ik van Daikin gewend ben tot dusver, was dit een futuristisch product!
+Dit is een vrij nieuw product van Daikin en is gefocussed op het eigen verbruik/opbrengst te optimaliseren. Via een USB poort is een P1 kabel naar een slimme meter aan te sluiten, en dat is alles wat je nodig hebt om buffering in je vloerverwarming of tapwater tank te gebruiken. Woaw. Voor wat ik van Daikin gewend ben tot dusver aan IO boards bijv, is dit een futuristisch product!
 
 ![](/assets/images/daikin_altherma_3/ekrhh.png){: width="300" } ![](/assets/images/daikin_altherma_3/ekrhh-connect.png){: width="300  " }
 

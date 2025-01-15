@@ -36,7 +36,7 @@ Ook merk je dat ze niet dol zijn om externe systemen via deze route te ondersteu
 
 Zolang ik dus geen alternatief had, was dit de manier om te integreren met mijn domotica. Meh.
 
-### Lokaal uitlezen: X10A serial poort
+### Het X10A serial poort
 
 Dit is een intern poort op de binnenunit, welke ook gebruikt wordt door hun engineers om bijvoorbeeld de firmware van de binnenunit te updaten (niet te verwarren met de user interface software op de binnenunit). Dit betreft een actief protocol waarbij je dus een query voor informatie stuurt en een antwoord krijgt van de binnenunit. 
 
@@ -50,13 +50,13 @@ Met die informatie kun je perfect je warmtepomp optimaliseren. Onderstaand een v
 
 Het wijzigen van instellingen gebreurt echter altijd handmatig op de unit zelf, omdat het besturen van de warmtepomp is beperkt tot het met een relais aansturen van de smart-grid contacten van de binnenunit. Wijzigen van woonkamer thermostaat setpoint is er bijvoorbeeld niet bij.
 
-### Lokale aansturing: Smart-grid contacten
+### De Smart-grid contacten
 
 ![](/assets/images/daikin_altherma_3/smart-grid.png){: width="400" }
 
 O.a. ESPAltherma maakt hier dus gebruik van, of je kunt zelf wat klussen met ESPHome bijvoorbeeld. De documentatie hiervan is goed, echter de mogelijkheden zijn erg beperkt. Deze Smart-grid interface is uit te breiden met 2 IO-boards van Daikin, welke je in staat stelt om uitgebreider bijvoorbeeld vermogenslimiten in te stellen, echter zijn deze erg prijzig voor de geleverde mogelijkheden, en kunnen deze nog steeds niet wat ik nodig heb, zoals bijvoorbeeld bepalen van de tank temperatuur.
 
-### Lokale aansturing: De P1P2 bus via Open Source
+### De P1P2 bus via Open Source
 
 De P1P2 bus is een eigen bus van Daikin die zij al een aantal generaties van hun apparaten gebruiken om te communiceren tussen verschillende apparaten. Bij de warmtepompten wordt dit gebruikt tussen de thermostaat en de binnenunit (nope, geen OpenTherm dus). Dit is een 2-draads bus, welke je vrij kunt doorlussen tussen de verschillende apparaten. 
 
@@ -65,11 +65,11 @@ De P1P2 bus is een eigen bus van Daikin die zij al een aantal generaties van hun
 
 Er bestaat een open source project dat dit protocol ge-reverse-engineered. Voormalig P1P2Serial en nu [P1P2MQTT](https://github.com/Arnold-n/P1P2MQTT). Gezien echter dat dit protocol in staat is naar interne registers te schrijven op de binnenunit en er geen officiele documentatie van Daikin is, wilde ik hier liever niet mee rommelen.
 
-### Lokale aansturing: P1P2 bus en derde partijen
+### De P1P2 bus en derde partijen
 
 Daikin werkt wel samen met derde partijen om producten te ontwikkelen die gebruik maken van de P1P2 bus. Er is dus wel documentatie van deze bus welke door derde partijen gebruikt wordt om producten te ontwikkelen. Zodoende zijn er bijvoorbeeld best wat producten te vinden voor KNX die via P1P2 Daikin producten kunnen aansturen. Tot dusver heb ik mij daar om 2 redenen niet echt in verdiept: KNX is geen open protocol. Je betaalt licentiekosten voor software om dit the programmeren, en de meeste producten hebben beperkt ondersteuning voor Daikin Altherms 3.
 
-### Lokale aansturing: P1P2 en Modbus producten van Daikin
+### De P1P2 bus en Modbus producten van Daikin
 
 Daikin heeft een aantal Modbus naar P1P2 producten op de markt. De volgende 3 ondersteunen de Altherma 3: DCOM-LT/MB, DCOM-LT/IO en de Daikin Home Hub (EKRHH). De eerste ondersteund alleen modbus, en de tweede zowel modbus als analoge ingangen.
 
@@ -79,13 +79,13 @@ De DCOM-LT/IO beschikt over de mogelijkheden die ik zoek. De aansturing zou nog 
 
 Totdat Daikin de Daikin Home Hub (EKRHH) introducteerde!
 
-### Lokale aansturing: Modbus via Daikin Home Hub
+### De P1P2 bus en de Daikin Home Hub
 
-Dit is een vrij nieuw product van Daikin en is gefocussed op het eigen verbruik/opbrengst te optimaliseren. Via een USB poort is een P1 kabel naar een slimme meter aan te sluiten, en dat is alles wat je nodig hebt om buffering in je vloerverwarming of tapwater tank te gebruiken. Woaw. Voor wat ik van Daikin gewend ben tot dusver aan IO boards bijv, is dit een futuristisch product!
+Dit is een vrij nieuw product van Daikin en is gefocussed op het eigen verbruik/opbrengst te optimaliseren. Hij wordt gemonteerd in de meterkast en is aangesloten op de P1P2 bus van de warmtepomp. Via een USB poort is een P1 kabel naar een slimme meter aan te sluiten, en dat is alles wat je nodig hebt om buffering in je vloerverwarming of tapwater tank te gebruiken. Woaw. Voor wat ik van Daikin gewend ben tot dusver aan IO boards bijv, is dit een futuristisch product!
 
-![](/assets/images/daikin_altherma_3/ekrhh.png){: width="300" } ![](/assets/images/daikin_altherma_3/ekrhh-connect.png){: width="300  " }
+![](/assets/images/daikin_altherma_3/ekrhh.png){: width="300" } ![](/assets/images/daikin_altherma_3/ekrhh-connect.png){: width="300" }
 
-Ook ondersteunde het een Modbus modus, waarin alle slimmigheid uitgeschakeld wordt, en er zowel via RTU (serieel) als over TCP een Modbus interface beschikbaar is. Wat ik van de documentatie mag geloven, stelt dit alle mogelijkheden beschikbaar voor de Altherma 3 die ik zoek.
+Ook ondersteunde het een Modbus modus, waarin alle slimmigheid uitgeschakeld wordt, en er gekozen kan worden tussen Modbus RTU (serieel) of Modbus TCP toegankelijk over het ethernetpoort. Wat ik van de documentatie mag geloven, stelt dit alle mogelijkheden beschikbaar voor de Altherma 3 die ik zoek.
 
 ## Verder bouwen
 

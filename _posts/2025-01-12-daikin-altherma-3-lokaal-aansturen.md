@@ -89,7 +89,7 @@ Ook ondersteunde het een Modbus modus, waarin alle slimmigheid uitgeschakeld wor
 
 ## Verder bouwen
 
-Na het bekijken van opties voor lokale aansturing van de Daikin Altherma 3 warmtepomp, lijkt de Daikin Home Hub de beste keuze. Aangevuld met ESPAltherma voor het uitlezen van data dat de Daikin Home Hub niet kan leveren.
+Na het bekijken van opties voor lokale aansturing, lijkt de Daikin Home Hub de beste keuze. Aangevuld met ESPAltherma voor het uitlezen van data dat de Home Hub niet kan leveren.
 
 Het idee is om een ESP32 met ESPHome te gebruiken om over Modbus RTU met de Daikin Home Hub te communiceren. De Daikin Home Hub zal dan enkel als modbus interface dienen om de Altherma 3 aan te sturen. Zie [Een eigen thermostaat bouwen](/een-eigen-thermostaat-bouwen) hoe dit verder ging.
 

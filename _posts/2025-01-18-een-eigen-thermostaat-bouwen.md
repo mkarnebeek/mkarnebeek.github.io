@@ -1,13 +1,16 @@
 ---
 title: "ESPHome thermostaat voor Daikin Altherma 3"
 tags: ESPHome Daikin Warmtepomp
+hidden: true
 ---
 
 In [een vorig artikel](/daikin-altherma-3-lokaal-aansturen) keek ik naar welke manieren mijn warmtepomp lokaal aan te sturen is. Dit leverde een Modbus RTU interface op waarmee ik de gewenste functies van de warmtepomp kan aansturen. Ik dit artikel beschrijf ik hoe mijn eigen gebouwde thermostaat hiervan gebruik maakt, wat ik er mee probeer te bereiken en hoe dat werkt.
 
 Inmiddels hangt aan de woonkamer muur een AirGradient luchtkwaliteitsmeter welke als thermostaat fungeert, in plaats van de Madoka thermostaat die met de warmtepomp mee kwam.
  
-todo: Foto van de AirGradient thermostaat aan de muur
+![](/assets/images/daikin_altherma_3/airgradient_aan_muur.jpg){: width="300" } ![](/assets/images/daikin_altherma_3/airgradient.png){: width="300" }
+
+Links zoals hij aan de muur hangt met aangepaste ESPHome firmware, en rechts een productfoto met originele firmware. Ja, ik moet de stroomvoorziening nog netjes wegwerken, maar het is een mooi apparaat aan de muur. Het kan naast de temperatuur ook de luchtkwaliteit meten en heeft ledjes en een display voor nuttige informatie, niet alleen voor de luchtkwaliteit, maar ook andere meldingen vanuit Home Assistant kunnen hier als notificaties op weergegeven worden.
 
 ## Doel
 
@@ -33,45 +36,47 @@ Daarnaast mis ik op dit moment de volgende features:
 - Een op zichzelfstaand systeem, onafhankelijk van het functioneren van Home Assistant of het computer netwerk. Optimalisaties mogen best afhankelijk zijn van informatie van Home Assistant of het internet, maar de basisfunctionaliteit voor het verwarmen van het huis moet robust en onafhankelijk functioneren.
 - Bij voorkeur zo min mogelijk zelfbouw hardware en zo veel mogelijk gebruik makend van bestaande hardware en open source software.
 - Mogelijkheden om eigen logica te implementeren of bestaande logica zodanig aan te passen naar mijn wensen. Dit is ten slotte een hobby project :P.
+- Alles van netstroom voorzien. Geen batterijen vervangen elk jaar.
 
 ## Implementatie
 
-### Modbus RTU aansturing
+### Modbus RTU aansturing met een ESP32 microcontroller
 
-todo: afbeeldingen Modbus RTU interface tussen Home Hub en ESPHome microcontroller.
+Modbus RTU is een simpele 2 aderige interface (alleen de A+/B- aansluitingen zijn nodig) die direct tussen deze 2 apparaten werkt. Door een simpele fysieke verbinding te gebruiken en een microcontroller, kan dit zelfstandig functioneren.
 
-Door de thermostaat logica te draaien in een microcontroller in plaats van Home Assistant, kan deze zelfstandig functioneren en verbruikt het weinig stroom. Omdat ik Home Assistant gebruik, en ESPHome ondersteuning heeft voor Modbus RTU en verschillende thermostaat logica's, is het ook een logische keuze om ESPHome te gebruiken als firmware voor de microcontrollers.
+![](/assets/images/daikin_altherma_3/uart-to-rs485.png){: width="300" } ![](/assets/images/daikin_altherma_3/homehub-connectors.png){: width="300"} 
 
-Jurriaan heeft voor een van zijn projecten al eerder een ESP32 met een modbus RTU interface gebouwd. De combinatie is heel gangbaar, waardoor dit in de toekomst ook makkelijk te vervangen is mocht het defect raken. Hij heeft voor mij eenzelfde combinatie gebouwd met een display en transparante behuizing, welke ik zonder enige verdere aanpassingen kan gebruiken. Alleen de software die er op draait (ESPHome) moet ik zelf inrichten, wat precies is wat ik zocht.
+De Daikin Home Hub (rechts) heeft naast stroom en een P1P2 verbinding (zie X6A op de afbeelding), ook een RS485 interface (zie X8A). Dit is voor Modbus RTU. Deze is makkelijk aan te sturen met een ESP32 microcontroller met een UART-naar-RS485 transceiver (links). 
 
-todo: afbeeldingen modbus ESP32 met behuizing en display
-subtext: Modbus RTU is een simpele interface en makkelijk aan te sturen met een microcontroller. Het werkt met maar 2 aders tussen 2 apparaten en werkt onafhankelijk van het thuisnetwerk.
+In de afbeelding hieronder zie je een behuizing met daarin een ESP32 microcontroller, een RS485 transceiver (MAX485 IC) en een display. Jurjen had deze al eerder gebouwd voor een ander project, en heeft voor mij een zelfde combinatie gebouwd met een display en transparante behuizing, welke ik zonder enige verdere aanpassingen kan gebruiken. Neat. De combinatie van ESP32 en RS485 transceiver is heel gangbaar, waardoor dit in de toekomst ook makkelijk te vervangen is mocht het defect raken. 
 
-Deze plaatsen we in de meterkast. Ik kom later terug op waarom.
+[![](/assets/images/daikin_altherma_3/esp32_modbus.jpg){: width="400" }](/assets/images/daikin_altherma_3/esp32_modbus.jpg)
 
-### Woonkamer temperatuur meten
+De grijze kabel is de RS485 verbinding met de Daikin Home Hub, en de zwarte USB kabel dient alleen voor voeding. Communicatie met de AirGradient verloopt via Bluetooth Low Energy en met Home Assistant via Wifi.
 
-todo: afbeeldingen AirGradient
+Voor de software op de ESP32 heb ik ESPHome gekozen, omdat dit al ondersteunding voor [modbus](https://esphome.io/components/modbus_controller.html) en thermostaat logica aan boord heeft, ik het ook gebruik voor de AirGradient, en de verdere (optionele) communicatie met Home Assistant dan erg gemakkelijk is.
 
-todo: afbeeldingen bluetooth sensor
+Deze microcontroller plaatsen we samen met de Daikin Home Hub in de meterkast.
 
-Vervolgens moet ik de huidige woonkamer temperatuur meten. Ik heb daar al een AirGradient luchtkwaliteitsmeter staan. Die is ook al voorzien van ESPHome en een display met wat nuttige informatie. Ik hergebruik graag deze in plaats van weer een extra apparaat in de woonkamer te hebben staan. Deze kan prima aan de muur hangen waar nu de thermostaat zit. 
+### De woonkamer temperatuur meten
 
-Aangezien de AirGradient een standaard ESP32 gebruikt, beschikt hij zowel wifi als bluetooth. Het is dan gemakkelijk de sofware uit te breiden om deze als een generieke bluetooth temperatuur sensor te laten gedragen.
+![](/assets/images/daikin_altherma_3/airgradient.png){: width="300" }
+
+Ik de woonkamer had ik al een AirGradient luchtkwaliteitsmeter staan, die ik ook al voorzien had van ESPHome en een display heeft die wat nuttige informatie kan tonen. Ik hergebruik graag deze in plaats van weer een extra apparaat in de woonkamer te hebben staan. Deze kan prima aan de muur hangen waar nu de thermostaat zit. Aangevuld met wat icoontjes voor warmtevraag en of de tapwater tank gevuld wordt.
+
+In theorie kan ik deze 2 apparaten samenvoegen, maar aangezien ik graag zo min mogelijk aanpassingen of zelfbouw hardware wil gebruiken, is het handiger om deze aan elkaar te koppelen. Aangezien ze beiden een ESP32 gebruiken en deze beschikken over Bluetooth, is dit erg gemakkelijk draadloos te doen met Bluetooth Low Energy! De thermostaatdraden in de muur zijn dus alleen nodig voor voeding.
 
 ### Thermostaat logica
 
-Nu is de vraag, waar draaien we de thermostaat logica? Ik heb 2 opties:
-- **In de AirGradient** aan de muur in de woonkamer, en de microcontroller in de meterkast alleen een simpele Modbus RTU client.
-- **In de microcontroller in de meterkast**, en de AirGradient een generieke bluetooth temperatuur sensor.
+Nu is de vraag, in welke van de twee ESP32s draaien we de thermostaat logica? Traditioneel draait dit in het apparaat aan de muur in de woonkamer. Maar, ik heb een beter idee en kies er voor om dat in de meterkast te draaien. Dit maakt dat de AirGradient in de woonkamer zich alleen als een generieke bluetooth temperatuur sensor hoeft te gedragen en dus in de toekomst eventueel te vervangen is door iets anders, of meerdere sensoren bijv voor zoneregeling.
 
-Ik ga voor de tweede optie, omdat:
-- Bij wegvallen van de bluetooth verbinding met de AirGradient, zal de verwarming nog steeds beperkt kunnen functioneren, gebaseerd op alleen de buiten temperatuur.
-- De AirGradient gedraagt zich als een generieke bluetooth temperatuur sensor, wat het makkelijk maakt om deze in de toekomst eventueel te vervangen door een andere sensor.
+Ook maakt dit het systeem in zijn geheel robuster, omdat bij het wegvallen van de bluetooth verbinding met de AirGradient, de verwarming nog steeds beperkt zal kunnen functioneren, gebaseerd op alleen de buiten temperatuur die door de buitenunit wordt gemeten.
 
 ## Tijd om te bouwen!
 
 Goed, we hebben alles compleet om te kunnen bouwen!
+
+todo: left here.
 
 todo: diagram esphome microcontroller verbonden met de Home Hub. En een thermometer in de woonkamer. Ook waar wifi op zit en wat verbonden is met Home Assistant. Ook de binnenunit met espaltherma is leuk om weer te geven.
 

@@ -54,6 +54,7 @@ plugins:
   - jekyll-feed
   - jemoji
   - jekyll-include-cache
+  - jekyll-mermaid
 
 author:
   name   : "Michiel Karnebeek"
@@ -96,3 +97,6 @@ category_archive:
 tag_archive:
   type: liquid
   path: /tags/
+
+mermaid:
+  src: "https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"

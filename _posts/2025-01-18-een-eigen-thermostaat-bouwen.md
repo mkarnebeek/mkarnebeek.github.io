@@ -46,17 +46,21 @@ Modbus RTU is een simpele 2 aderige interface (alleen de A+/B- aansluitingen zij
 
 ![](/assets/images/daikin_altherma_3/uart-to-rs485.png){: width="300" } ![](/assets/images/daikin_altherma_3/homehub-connectors.png){: width="300"} 
 
-De Daikin Home Hub (rechts) heeft naast stroom en een P1P2 verbinding (zie X6A op de afbeelding), ook een RS485 interface (zie X8A). Dit is voor Modbus RTU. Deze is makkelijk aan te sturen met een ESP32 microcontroller met een UART-naar-RS485 transceiver (links). 
+De Daikin Home Hub (2e afbeelding) heeft naast stroom en een P1P2 verbinding (zie X6A op de afbeelding), ook een RS485 interface (zie X8A). Dit is voor Modbus RTU. Deze is makkelijk aan te sturen met een ESP32 microcontroller met een UART-naar-RS485 transceiver (1e afbeelding). 
 
-In de afbeelding hieronder zie je een behuizing met daarin een ESP32 microcontroller, een RS485 transceiver (MAX485 IC) en een display. Jurjen had deze al eerder gebouwd voor een ander project, en heeft voor mij een zelfde combinatie gebouwd met een display en transparante behuizing, welke ik zonder enige verdere aanpassingen kan gebruiken. Neat. De combinatie van ESP32 en RS485 transceiver is heel gangbaar, waardoor dit in de toekomst ook makkelijk te vervangen is mocht het defect raken. 
+In de afbeelding hieronder zie je een behuizing met daarin een ESP32 microcontroller, een RS485 transceiver (MAX485 IC) en een display. Jurjen had deze al eerder gebouwd voor een ander project, en heeft voor mij een zelfde combinatie gebouwd met een display en transparante behuizing, welke ik zonder enige verdere aanpassingen kan gebruiken. Neat! Dank Jurjen! De combinatie van ESP32 en RS485 transceiver is heel gangbaar, waardoor dit in de toekomst ook makkelijk te vervangen is mocht het defect raken. 
 
 [![](/assets/images/daikin_altherma_3/esp32_modbus.jpg){: width="400" }](/assets/images/daikin_altherma_3/esp32_modbus.jpg)
 
-De grijze kabel is de RS485 verbinding met de Daikin Home Hub, en de zwarte USB kabel dient alleen voor voeding. Communicatie met de AirGradient verloopt via Bluetooth Low Energy en met Home Assistant via Wifi.
+De grijze kabel is de RS485 verbinding met de Daikin Home Hub, en de zwarte USB kabel dient alleen voor voeding. Deze microcontroller plaatsen we samen met de Daikin Home Hub in de meterkast.
 
-Voor de software op de ESP32 heb ik ESPHome gekozen, omdat dit al ondersteunding voor [modbus](https://esphome.io/components/modbus_controller.html) en thermostaat logica aan boord heeft, ik het ook gebruik voor de AirGradient, en de verdere (optionele) communicatie met Home Assistant dan erg gemakkelijk is.
+Voor de software op de ESP32 heb ik ESPHome gekozen, omdat dit al ondersteunding voor [modbus](https://esphome.io/components/modbus_controller.html) en thermostaat logica aan boord heeft en de verdere (optionele) communicatie met Home Assistant dan erg gemakkelijk is.
 
-Deze microcontroller plaatsen we samen met de Daikin Home Hub in de meterkast.
+{% mermaid %}
+graph LR;
+    MK[ESP32] -->|Modbus RTU| DHH[Daikin Home Hub]
+    DHH -->|P1P2 bus| WP[Warmtepomp]
+{% endmermaid %}
 
 ### De woonkamer temperatuur meten
 
@@ -74,11 +78,28 @@ Ook maakt dit het systeem in zijn geheel robuster, omdat bij het wegvallen van d
 
 ## Tijd om te bouwen!
 
-Goed, we hebben alles compleet om te kunnen bouwen!
+Inmiddels zijn het best wat componenten geworden, maar de basis van het systeem is nog relatief simpel.
 
-todo: left here.
+{% mermaid %}
+graph TD;
+    MK[ESP32 meterkast met thermostaat logica] -->|Modbus RTU| DHH[Daikin Home Hub]
+    AG[AirGradient Woonkamer] -->|Bluetooth Low Energy| MK
+    DHH -->|P1P2| WP[Warmtepomp]
+{% endmermaid %}
 
-todo: diagram esphome microcontroller verbonden met de Home Hub. En een thermometer in de woonkamer. Ook waar wifi op zit en wat verbonden is met Home Assistant. Ook de binnenunit met espaltherma is leuk om weer te geven.
+Betrekken we ook de optionele communicatie en ESPAltherma bijvoorbeeld (allen stippelijntjes), dan krijgen we het volgende schema.
+
+{% mermaid %}
+graph TD;
+    AG[AirGradient Woonkamer] -->|Bluetooth Low Energy| MK
+    MK[ESP32 meterkast] -->|Modbus RTU| DHH[Daikin Home Hub]
+    HA[Home Assistant] -.->|ESPHome over Wifi| AG
+    DHH -->|P1P2| WP
+    DHH -.->|Ethernet| Router/Internet
+    HA -.->|ESPHome over Wifi| MK
+    WP[Warmtepomp] -.->|X10A| ESPAltherma
+    ESPAltherma -.->|MQTT over Wifi| HA    
+{% endmermaid %}
 
 ### Modbus registers
 

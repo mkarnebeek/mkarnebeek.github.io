@@ -6,11 +6,11 @@ hidden: true
 
 In [een vorig artikel](/daikin-altherma-3-lokaal-aansturen) keek ik naar welke manieren mijn warmtepomp lokaal aan te sturen is. Dit leverde een Modbus RTU interface op waarmee ik de gewenste functies van de warmtepomp kan aansturen. Ik dit artikel beschrijf ik hoe mijn eigen gebouwde thermostaat hiervan gebruik maakt, wat ik er mee probeer te bereiken en hoe dat werkt.
 
-Inmiddels hangt aan de woonkamer muur een AirGradient luchtkwaliteitsmeter welke als thermostaat fungeert, in plaats van de Madoka thermostaat die met de warmtepomp mee kwam.
+Inmiddels hangt aan de woonkamer muur een AirGradient luchtkwaliteitsmeter welke als thermostaat fungeert, in plaats van de Madoka thermostaat die met de warmtepomp kwam.
  
-![](/assets/images/daikin_altherma_3/airgradient_aan_muur.jpg){: width="300" } ![](/assets/images/daikin_altherma_3/airgradient.png){: width="300" }
+![](/assets/images/daikin_altherma_3/airgradient_aan_muur.jpg){: width="400" }
 
-Links zoals hij aan de muur hangt met aangepaste ESPHome firmware, en rechts een productfoto met originele firmware. Ja, ik moet de stroomvoorziening nog netjes wegwerken, maar het is een mooi apparaat aan de muur. Het kan naast de temperatuur ook de luchtkwaliteit meten en heeft ledjes en een display voor nuttige informatie, niet alleen voor de luchtkwaliteit, maar ook andere meldingen vanuit Home Assistant kunnen hier als notificaties op weergegeven worden.
+Ja, ik moet de stroomvoorziening nog netjes wegwerken, maar het is een mooi apparaat aan de muur. Het kan naast de temperatuur ook de luchtkwaliteit meten en heeft ledjes en een display voor nuttige informatie, niet alleen voor de luchtkwaliteit, maar ook andere meldingen vanuit Home Assistant kunnen hier als notificaties op weergegeven worden.
 
 ## Doel
 
@@ -54,8 +54,6 @@ In de afbeelding hieronder zie je een behuizing met daarin een ESP32 microcontro
 
 De grijze kabel is de RS485 verbinding met de Daikin Home Hub, en de zwarte USB kabel dient alleen voor voeding. Deze microcontroller plaatsen we samen met de Daikin Home Hub in de meterkast.
 
-Voor de software op de ESP32 heb ik ESPHome gekozen, omdat dit al ondersteunding voor [modbus](https://esphome.io/components/modbus_controller.html) en thermostaat logica aan boord heeft en de verdere (optionele) communicatie met Home Assistant dan erg gemakkelijk is.
-
 {% mermaid %}
 graph LR;
     MK[ESP32] -->|Modbus RTU| DHH[Daikin Home Hub]
@@ -64,7 +62,7 @@ graph LR;
 
 ### De woonkamer temperatuur meten
 
-![](/assets/images/daikin_altherma_3/airgradient.png){: width="300" }
+![](/assets/images/daikin_altherma_3/airgradient.png){: width="400" }
 
 Ik de woonkamer had ik al een AirGradient luchtkwaliteitsmeter staan, die ik ook al voorzien had van ESPHome en een display heeft die wat nuttige informatie kan tonen. Ik hergebruik graag deze in plaats van weer een extra apparaat in de woonkamer te hebben staan. Deze kan prima aan de muur hangen waar nu de thermostaat zit. Aangevuld met wat icoontjes voor warmtevraag en of de tapwater tank gevuld wordt.
 
@@ -76,9 +74,9 @@ Nu is de vraag, in welke van de twee ESP32s draaien we de thermostaat logica? Tr
 
 Ook maakt dit het systeem in zijn geheel robuster, omdat bij het wegvallen van de bluetooth verbinding met de AirGradient, de verwarming nog steeds beperkt zal kunnen functioneren, gebaseerd op alleen de buiten temperatuur die door de buitenunit wordt gemeten.
 
-## Tijd om te bouwen!
+## Overzicht componenten
 
-Inmiddels zijn het best wat componenten geworden, maar de basis van het systeem is nog relatief simpel.
+Inmiddels zijn het best wat componenten geworden, maar de basis is nog relatief simpel.
 
 {% mermaid %}
 graph TD;
@@ -87,7 +85,7 @@ graph TD;
     DHH -->|P1P2| WP[Warmtepomp]
 {% endmermaid %}
 
-Betrekken we ook de optionele communicatie en ESPAltherma bijvoorbeeld (allen stippelijntjes), dan krijgen we het volgende schema.
+Betrekken we ook de optionele communicatie en ESPAltherma bijvoorbeeld (als stippelijntjes), dan krijgen we het volgende schema.
 
 {% mermaid %}
 graph TD;
@@ -101,7 +99,52 @@ graph TD;
     ESPAltherma -.->|MQTT over Wifi| HA    
 {% endmermaid %}
 
-### Modbus registers
+## Software
+
+De hardware is compleet, dus laten we dieper in gaan op de firmware voor op de microcontrollers.
+
+Voor de firmware op de ESP32 heb ik ESPHome gekozen, omdat dit al ondersteunding voor [modbus](https://esphome.io/components/modbus_controller.html) en thermostaat logica aan boord heeft en de verdere (optionele) communicatie met Home Assistant dan erg gemakkelijk is.
+
+### Modbus verbinding
+
+Op de website van Daikin is (onderaan de pagina) de "[Installatie handleiding voor installateur](https://www.daikin.nl/nl_nl/installateurs/products/product.html/EKRHH.html)" te vinden. Hierin staan een aantal parameters voor de Modbus RTU interface van de Daikin Home Hub.
+
+![](/assets/images/daikin_altherma_3/rs485-parameters.png){: width="600" }
+
+Vervolgens heb ik gebaseerd op de ESPHome documentatie voor de [Modbus Controller](https://esphome.io/components/modbus_controller.html) de volgende YAML configuratie gebruikt. Let op dat de GPIO pins, baud rate en het nodig hebben van een flow control pin specifiek zijn voor de MAX485 IC. Check hoe jouw specifieke IC en/of transceiver aangesloten is en stel deze correct in. 
+
+```yaml
+uart:
+  id: mod_bus
+  tx_pin: GPIO17
+  rx_pin: GPIO16
+  baud_rate: 9600
+
+modbus:
+  id: modbus1
+  uart_id: mod_bus
+  flow_control_pin: GPIO18
+
+modbus_controller:
+  - id: daikin_ekrhh
+    # Dit adres stel je in bij het aansluiten van 
+    # de Home Hub op de warmtepomp.
+    address: 0x1 
+    modbus_id: modbus1
+    setup_priority: -10
+    update_interval: 20s
+```
+
+## Registers
+
+Nu we verbinding hebben met de Daikin Home Hub, kunnen we registers lezen en schrijven. Modbus kent een aantal registers, maar de Daikin Home Hub gebruikt er maar 2:
+- **Holding Registers**: Deze kunnen gelezen en geschreven worden.
+- **Input Registers**: Deze kunnen alleen gelezen worden.
+
+De handleiding defineert ook enkele formaten
+![](/assets/images/daikin_altherma_3/modbus-register-formats.png){: width="600" }
+
+# todo: left here
 
 ### BLE verbinding betrouwbaar maken
 

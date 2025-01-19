@@ -42,7 +42,7 @@ Daarnaast mis ik op dit moment de volgende features:
 
 ### Modbus RTU aansturing met een ESP32 microcontroller
 
-Modbus RTU is een simpele 2 aderige interface (alleen de A+/B- aansluitingen zijn nodig) die direct tussen deze 2 apparaten werkt. Door een simpele fysieke verbinding te gebruiken en een microcontroller, kan dit zelfstandig functioneren.
+Modbus RTU is een simpele 2 aderige interface (alleen de A+/B- aansluitingen zijn nodig. GND is optioneel) die direct tussen deze 2 apparaten werkt. Door een simpele fysieke verbinding te gebruiken en een microcontroller, in plaats van een afhankelijkheid te creëren op het computernetwerk of Home Assistant, kan dit zelfstandig functioneren.
 
 ![](/assets/images/daikin_altherma_3/uart-to-rs485.png){: width="300" } ![](/assets/images/daikin_altherma_3/homehub-connectors.png){: width="300"} 
 

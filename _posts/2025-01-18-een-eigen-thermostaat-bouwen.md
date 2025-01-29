@@ -103,9 +103,9 @@ graph TD;
 
 De hardware is compleet, dus laten we dieper in gaan op de firmware voor op de microcontrollers.
 
-Voor de firmware op de ESP32 heb ik ESPHome gekozen, omdat dit al ondersteunding voor [modbus](https://esphome.io/components/modbus_controller.html) en thermostaat logica aan boord heeft en de verdere (optionele) communicatie met Home Assistant dan erg gemakkelijk is.
+Voor de firmware op de ESP32 heb ik ESPHome gekozen, omdat dit al ondersteunding voor [modbus](https://esphome.io/components/modbus_controller.html) en thermostaat logica aan boord heeft en de verdere (optionele) communicatie met Home Assistant dan erg gemakkelijk is. Let wel op dat ESPHome de verbinding met Home Assistant of wifi verliest, hij by default periodiek zal herstarten. Het is handig dit langer in te stellen dan de standaard waarde. Zie verderop voor meer informatie.
 
-### Modbus verbinding
+## Modbus verbinding
 
 Op de website van Daikin is (onderaan de pagina) de "[Installatie handleiding voor installateur](https://www.daikin.nl/nl_nl/installateurs/products/product.html/EKRHH.html)" te vinden. Hierin staan een aantal parameters voor de Modbus RTU interface van de Daikin Home Hub.
 
@@ -135,22 +135,98 @@ modbus_controller:
     update_interval: 20s
 ```
 
-## Registers
+### Registers lezen en schrijven
 
 Nu we verbinding hebben met de Daikin Home Hub, kunnen we registers lezen en schrijven. Modbus kent een aantal registers, maar de Daikin Home Hub gebruikt er maar 2:
 - **Holding Registers**: Deze kunnen gelezen en geschreven worden.
 - **Input Registers**: Deze kunnen alleen gelezen worden.
 
-De handleiding defineert ook enkele formaten
+De handleiding defineert ook enkele formaten voor waardes in deze registers.
 ![](/assets/images/daikin_altherma_3/modbus-register-formats.png){: width="600" }
 
-# todo: left here
+Vervolgens publiceert de handleiding een lijst van waardes die we kunnen lezen en schrijven.
+
+![](/assets/images/daikin_altherma_3/holding_registers.png){: width="600" }
+
+Welke in ESPHome als volgt gebruikt kunnen worden:
+
+```yaml
+number:
+  - platform: modbus_controller
+    modbus_controller_id: daikin_ekrhh
+    name: "Leaving water Main Heating setpoint"
+    register_type: holding
+    address: 0
+    unit_of_measurement: "°C"
+    value_type: S_WORD # Dit is een 16-bit integer
+    min_value: 25 # deze zijn je min en max stooklijn waarden
+    max_value: 35
+    lambda: |-
+      if (x > 100 || x < 0) { return NAN;}
+      return x;
+
+  - platform: modbus_controller
+    modbus_controller_id: daikin_ekrhh
+    name: "Leaving water Main Cooling setpoint"
+    register_type: holding
+    address: 1
+    unit_of_measurement: "°C"
+    value_type: S_WORD
+    min_value: 17
+    max_value: 20
+    lambda: |-
+      if (x > 100 || x < 0) { return NAN;}
+      return x;
+
+select:
+  - platform: modbus_controller
+    id: operation_mode_select
+    name: "Operation mode"
+    address: 2
+    value_type: S_WORD
+    optionsmap:
+      "Auto": 0
+      "Heating": 1
+      "Cooling": 2
+```
+
+Eenmaal de ESPHome firmware gebouwd en aan Home Assistant toegevoegd, wordt dit als volgt weergegeven in Home Assistant:
+
+![](/assets/images/daikin_altherma_3/ha-ui.png){: width="600" }
+
+### Nuttige registers
+
+Ok, absolute waardes voor aanvoer temperatuur doorgeven is leuk, maar eigenlijk wil ik de warmtepomp de dingen laten doen waar hij goed in is, en ik voeg er wat aan toe. Dus registers voor manipulatie van de stoolijk zijn interessanter. Hieronder een overzicht van de registers die ik gebruik en waarvoor. Hou er rekening mee dat ik de thermostaat van Daikin dus afkoppel en de unit zelf alleen beschikking heeft over de buitentemperatuur, gemeten door de buitenunit.
+
+- **Operation mode: Auto, Heating, Cooling**: Auto zal automatisch switchen tussen koelen en verwarmen. Ik zal dit explicitet op koelen of verwarmen zetten, omdat the climate component van ESPHome hiermee beter werkt.
+- **Space heating/cooling: ON/OFF**: Dit schakelt de ruimteverwarming aan of uit. Zie ook "In bedrijf" in het menu van de warmtepomp. Dit gebruik ik om de warmtepomp te vertellen af te schakelen bij een te hoge woonkamer temperatuur.
+- **DHW setpoint**: Absolute gewenste tank temperatuur. Werkt alleen als de warmtepomp in "Fixed" setpoint. Aangezien ik zelf logica wil maken voor de desinfectie run, en onderscheid wil maken in 2 krachtig-modussen (1 tot de max van de buitenuit: 55 graden, en de ander tot het maximum van de binnenunit: 60 graden), en een eventuele stooklijk niet moeilijk is zelf te bouwen, zal ik deze als absolute waarde zelf instellen..
+- **DHW reheat ON/OFF**: Uitschakeling van de tank verwarming. Zie ook "In bedrijf" in het menu van de warmtepomp. Handig voor op vakantie.
+- **DHW booster mode ON/OFF**: Dit activeert de booster mode van de warmtepomp. Dit is een extra verwarming die de warmtepomp aan kan zetten om de tank sneller op temperatuur te krijgen. De termperatuur hiervoor heb ik op de warmtepomp ingesteld op 60 graden. Dit wordt de meest krachtige van de 2 krachtig-modussen.
+- **Weather dependent mode - Main LWT Heating setpoint offset**: Als de warmtepomp op stooklijn staat ingesteld voor ruimteverwarming (waarom zou je 'm op iets anders stellen?), dan kan je deze offset gebruiken om de stooklijn te manipuleren. Stel deze op -1 in om de stooklijn te verlagen met 1 graad. Dit gebruik ik om modulatie te implementeren. Er is ook een cooling, maar het stooklijk-bereik in temperatuur voor koelen is zo beperkt, en in de praktijk is het in de woonkamer altijd 2 graden ofzo hoger dan het koelen-setpoint, dat modulatie in de parktijk niets doet.
+- **Smart Grid operation mode**, **Power limit during Recommended on / buffering** en **General power limit**: Deze registers zijn voor het instellen van de maximale vermogen van de warmtepomp. Deze zal de warmtepomp aansturen om deze vermogen te halen, maar zal deze niet overschrijden. Dit is handig voor het eigenverbruik van de zonnepanelen te optimaliseren en energie te bufferen in de vloerverwarming en tank. Zie verderop voor meer informatie.
+
+## Features bouwen
+
+Jaaaa, eindelijk tijd om features te bouwen! Bijna... We hebben een aantal zaken eerst te regelen.
+
+### Testen
+
+Holdup... Voordat we de ESP32 20x per dag lopen te flashen, laten we het onszelf eerst makkelijk maken te testen. Wokwi simulatie
 
 ### BLE verbinding betrouwbaar maken
 
-### ESPHome thermostaat component en overnemen bestaande thermostaat
+todo: yaml
 
-- vergeet ook niet heractivatie bij herstart, want restore werkt niet?
+### Robuste functionaliteit
+
+Alle functionaliteit moet de uitval van wifi en de verbinding met Home Assistant overleven. Ook moet de ESP32 vrij kunnen herstarten en alle functionaliteit hervatten.
+
+Een probleem hier heb ik al eerder benoemd: Als ESPHome de verbinding met Home Assistant of wifi verliest, hij by default periodiek zal herstarten. Dit is nodig omdat de wifi en ip stack op de ESP32 niet goed kan omgaan met haperende verbindingen. Het is dus niet handig om deze feature uit te zetten, maar wel om dit op een zodanig grote interval te zetten dat de herstarts niet de werking van de thermostaatlogica beïnvloeden.
+
+Het andere probleem is dat, desondanks dat ESPHome benoemd dat de thermostaat dan restoren bij een reboot, dit niet volledig werkt: Ja, het setpoint en wat andere waarden worden hersteld, maar de state van de thermostaat niet. Als deze aan het verwarmen was, zal dit verloren raken en na reboot zelfs expliciet de actie uitvoeren om 'm uit te zetten. Dit is niet wenselijk.
+
+### ESPHome thermostaat component en overnemen bestaande thermostaat
 
 ### Openhaard modus
 
@@ -161,8 +237,7 @@ De handleiding defineert ook enkele formaten
 
 ...
 
-## Testen
-
-Wokwi simulatie
-
 ## Ervaringen tot dusver
+
+### Anti-vorst beveiliging
+### Stabilitiet woonkamer temperatuur

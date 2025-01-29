@@ -62,8 +62,7 @@ De P1P2 bus is een eigen bus van Daikin die zij al een aantal generaties van hun
 
 ![](/assets/images/daikin_altherma_3/thermostat.png){: width="200" .align-right } In mijn geval was er een Madoka-thermostaat als enige apparaat hierop aangesloten, deze trouwens ookwel de "Interface voor menselijk comfort" noemt :P.
 
-
-Er bestaat een open source project dat dit protocol ge-reverse-engineered. Voormalig P1P2Serial en nu [P1P2MQTT](https://github.com/Arnold-n/P1P2MQTT). Gezien echter dat dit protocol in staat is naar interne registers te schrijven op de binnenunit en er geen officiele documentatie van Daikin is, wilde ik hier liever niet mee rommelen.
+Er bestaat een open source project dat dit protocol ge-reverse-engineered heeft. Voormalig P1P2Serial en nu [P1P2MQTT](https://github.com/Arnold-n/P1P2MQTT). Gezien echter dat dit protocol in staat is naar interne registers te schrijven op de binnenunit en er geen officiele documentatie van Daikin is, wilde ik hier liever niet mee rommelen. Als ik een meer door Daikin ondersteunde manier kan vinden, heeft dat wel mijn voorkeur.
 
 ### De P1P2 bus en derde partijen
 

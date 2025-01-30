@@ -36,25 +36,25 @@ Ook merk je dat ze niet dol zijn om externe systemen via deze route te ondersteu
 
 Zolang ik dus geen alternatief had, was dit de manier om te integreren met mijn domotica. Meh.
 
-### Het X10A serial poort
-
-Dit is een intern poort op de binnenunit, welke ook gebruikt wordt door hun engineers om bijvoorbeeld de firmware van de binnenunit te updaten (niet te verwarren met de user interface software op de binnenunit). Dit betreft een actief protocol waarbij je dus een query voor informatie stuurt en een antwoord krijgt van de binnenunit. 
-
-Praktisch het enige open source project dat hiervan gebruik maakt is [ESPAltherma](https://github.com/raomin/ESPAltherma). Dit is een erg gaaf project om erg veel inzicht te krijgen in het gedrag van de warmtepomp. 
-
-![](/assets/images/daikin_altherma_3/espaltherma.png)
-
-Met die informatie kun je perfect je warmtepomp optimaliseren. Onderstaand een voorbeeld van de informatie die er uit te halen is:
-
-![](/assets/images/daikin_altherma_3/grafana.png)
-
-Het wijzigen van instellingen gebreurt echter altijd handmatig op de unit zelf, omdat het besturen van de warmtepomp is beperkt tot het met een relais aansturen van de smart-grid contacten van de binnenunit. Wijzigen van woonkamer thermostaat setpoint is er bijvoorbeeld niet bij.
-
 ### De Smart-grid contacten
 
 ![](/assets/images/daikin_altherma_3/smart-grid.png){: width="400" }
 
-O.a. ESPAltherma maakt hier dus gebruik van, of je kunt zelf wat klussen met ESPHome bijvoorbeeld. De documentatie hiervan is goed, echter de mogelijkheden zijn erg beperkt. Deze Smart-grid interface is uit te breiden met 2 IO-boards van Daikin, welke je in staat stelt om uitgebreider bijvoorbeeld vermogenslimiten in te stellen, echter zijn deze erg prijzig voor de geleverde mogelijkheden, en kunnen deze nog steeds niet wat ik nodig heb, zoals bijvoorbeeld bepalen van de tank temperatuur.
+O.a. ESPAltherma maakt hier gebruik van (zie verder), of je kunt zelf wat klussen met ESPHome bijvoorbeeld. De documentatie hiervan is goed, echter de mogelijkheden zijn erg beperkt. Deze Smart-grid interface is uit te breiden met 2 IO-boards van Daikin, welke je in staat stelt om uitgebreider bijvoorbeeld vermogenslimiten in te stellen, echter zijn deze erg prijzig voor de geleverde mogelijkheden, en kunnen deze nog steeds niet wat ik nodig heb, zoals bijvoorbeeld bepalen van de tank temperatuur.
+
+### Het X10A serial poort
+
+Het X10A poort is een intern poort op de binnenunit. Eigenlijk gebruik ik het poort liever niet, omdat je in staat bent interne ongedocumenteerde commando's naar de warmtepomp te sturen. Dit poort wordt ook gebruikt door Daikin engineers om bijvoorbeeld de firmware van de binnenunit te updaten (niet te verwarren met de user interface software op de binnenunit). Het is een actief protocol waarbij je dus een query voor informatie stuurt en een antwoord krijgt van de binnenunit.
+
+Praktisch het enige open source project dat hiervan gebruik maakt is [ESPAltherma](https://github.com/raomin/ESPAltherma). Aangezien dit aleen queries stuurt voor het opvragen van data, en geen instelingen aanpast of opdachten geeft, lijkt het enigzins veilig. Ook wordt dit al door veel mensen gebruikt. 
+
+![](/assets/images/daikin_altherma_3/espaltherma.png)
+
+Het levert een schat aan informatie op. Met die informatie kun je perfect je warmtepomp optimaliseren.
+
+![](/assets/images/daikin_altherma_3/grafana.png)
+
+Het wijzigen van instellingen gebreurt echter altijd handmatig op de unit zelf, omdat het besturen van de warmtepomp is beperkt tot het met een relais aansturen van de smart-grid contacten van de binnenunit. Wijzigen van woonkamer thermostaat setpoint is er bijvoorbeeld niet bij.
 
 ### De P1P2 bus via Open Source
 
@@ -62,7 +62,7 @@ De P1P2 bus is een eigen bus van Daikin die zij al een aantal generaties van hun
 
 ![](/assets/images/daikin_altherma_3/thermostat.png){: width="200" .align-right } In mijn geval was er een Madoka-thermostaat als enige apparaat hierop aangesloten, deze trouwens ookwel de "Interface voor menselijk comfort" noemt :P.
 
-Er bestaat een open source project dat dit protocol ge-reverse-engineered heeft. Voormalig P1P2Serial en nu [P1P2MQTT](https://github.com/Arnold-n/P1P2MQTT). Gezien echter dat dit protocol in staat is naar interne registers te schrijven op de binnenunit en er geen officiele documentatie van Daikin is, wilde ik hier liever niet mee rommelen. Als ik een meer door Daikin ondersteunde manier kan vinden, heeft dat wel mijn voorkeur.
+Er bestaat een open source project dat dit protocol ge-reverse-engineered heeft. Voormalig P1P2Serial en nu [P1P2MQTT](https://github.com/Arnold-n/P1P2MQTT). Gezien echter dat er geen officiele publieke documentatie van Daikin is voor P1P2, durfte ik hiermee niet de warmtepomp aan te sturen. Als ik een meer door Daikin ondersteunde manier kan vinden, heeft dat wel mijn voorkeur.
 
 ### De P1P2 bus en derde partijen
 
